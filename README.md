@@ -24,9 +24,10 @@
 ## 必要なもの
 以下を環境変数にセット
 
-- 論文を溜める Notion データベースの id
+- `NOTION_REFERENCE_DB`: 論文を溜める Notion データベースの id
   - そのまま動かすには、`URL`, `Created`, `Translate Status` カラムが存在する必要がある
-- Notion の API key
-- Gemini の API key
-- GitHub Token (GitHub を使う場合)
+- `NOTION_SECRET`: Notion の API key
+- `GEMINI_API_KEY`: Gemini の API key
+- `ANTHROPIC_API_KEY`: anthoropic の API key (claude を使う場合)
+- `GITHUB_TOKEN`: GitHub Token (GitHub を使う場合)
 
