@@ -1,7 +1,7 @@
 import os
 import argparse
 import src.notion as notion
-from src.translate.gemini import translate_pdf
+from src.translate import gemini, claude
 
 @notion.db(os.environ["NOTION_REFERENCE_DB"])
 class Reference:
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--github_repository', type=str)
     parser.add_argument('--github_path', type=str, default='')
     parser.add_argument('--github_branch', type=str, default='main')
+    parser.add_argument('--llm', type=str, default='gemini')
     args = parser.parse_args()
 
     repository = None
@@ -101,7 +102,10 @@ if __name__ == '__main__':
         url = page['properties']['URL']['url'].replace('abs', 'pdf')
         print(f'Start translation: {url}')
         path = download_from_url(url, save_dir='tmp')
-        texts = translate_pdf(path, cache_dir='tmp/cache')
+        if args.llm == 'claude':
+            texts = claude.translate_pdf(path, cache_dir='tmp/cache')
+        else:
+            texts = gemini.translate_pdf(path, cache_dir='tmp/cache')
 
         with open(path+'.md', 'w') as f:
             f.write(''.join(texts))
