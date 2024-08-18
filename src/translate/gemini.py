@@ -169,10 +169,14 @@ class TranslatePaper:
     def convert_references_source(self, text: str):
         import re
         def replace_reference(match):
-            numbers = match.group(1).split(',')
-            return ' '.join(f'[[#^ref{num.strip()}]]' for num in numbers)
-    
-        pattern = r'\[(\d+(?:,\s*\d+)*)\]'
+            if match.group(1):
+                return match.group(0)
+            if match.group(2):  # $ で囲まれていない場合
+                numbers = match.group(2).strip('[]').split(',')
+                return ' '.join(f'[[#^ref{num.strip()}]]' for num in numbers)
+
+        # $ で囲まれた部分を除外し、それ以外の [数字] パターンにマッチする正規表現
+        pattern = r'(\$[^\$]*\$)|(\[(\d+(?:,\s*\d+)*)\])'
         return re.sub(pattern, replace_reference, text)
 
     def __call__(self, text: str) -> list[str]:
