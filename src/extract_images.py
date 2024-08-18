@@ -27,5 +27,5 @@ if __name__ == '__main__':
     url = f'https://arxiv.org/pdf/{args.arxiv_id}'
     path = download_from_url(url, save_dir='tmp')
     extract_and_save_images(path, 'tmp')
-    print(f"Save images: tmp/{args.arxiv_id}/')
+    print(f"Save images: tmp/{args.arxiv_id}/")
 
