@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 import json
 import google.generativeai as genai
+from google.generativeai.types import StopCandidateException
 from pydantic.dataclasses import dataclass
 from pydantic import BaseModel, ValidationError
 from string import Template
@@ -192,8 +193,12 @@ class TranslatePaper:
                 output = '\n'.join([str(ref) for ref in refs.references])
                 output = '## 参考文献\n\n' + output
             else:
-                output = self.translate_single_section({'full_text': section_text })
-                output = self.convert_references_source(output)
+                try:
+                    output = self.translate_single_section({'full_text': section_text })
+                    output = self.convert_references_source(output)
+                except StopCandidateException as e:
+                    print('skip this section because\n', e)
+                    output = f'## {section.title}\n\n### body\n{section_text}\n\n### error\n```\n{e}\n```'
             outputs.append('\n\n' + output + '\n\n')
         return outputs
 
