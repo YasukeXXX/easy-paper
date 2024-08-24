@@ -193,9 +193,12 @@ class TranslatePaper:
                 end_line = outline.paper.sections[i+1].line
             section_text = '## ' + ('\n'.join(lines[section.line:end_line]))
             if section.is_references:
-                refs = self.convert_references({'full_text': section_text })
-                output = '\n'.join([str(ref) for ref in refs.references])
-                output = '## 参考文献\n\n' + output
+                try:
+                    refs = self.convert_references({'full_text': section_text })
+                    output = '\n'.join([str(ref) for ref in refs.references])
+                    output = '## 参考文献\n\n' + output
+                except Exception as err:
+                    output = f'## 参考文献\n\n```\n{err}\n```'
             else:
                 try:
                     output = self.translate_single_section({'full_text': section_text })
