@@ -183,7 +183,7 @@ class TranslatePaper:
         lines = text.split('\n')
         lined_text = '\n'.join([f'{i}: {line}' for i, line in enumerate(lines)])
         outline = self.extract_outline({"full_text": lined_text})
-        outputs = []
+        outputs = [outline.paper.title]
         print(outline.paper.title)
         for i, section in enumerate(outline.paper.sections):
             print(section.title)
