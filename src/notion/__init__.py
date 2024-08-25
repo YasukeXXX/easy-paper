@@ -60,14 +60,19 @@ def db(database_id: str):
     return decolate
 
 def append_text_block(block_id: str, texts: list[str]):
+    def valid_texts(text: str, max_length: int = 2000) -> list[dict]:
+        if len(text) <= max_length:
+            return [{ 'type': 'text', 'text': { 'content': text }}]
+        return [
+                { 'type': 'text', 'text': { 'content': text[i:i+max_length] }}
+            for i in range(0, len(text), max_length)]
+
     payloads = [
             {
                 'object': "block",
                 'type': "paragraph",
                 'paragraph': {
-                    'rich_text': [
-                        { 'type': 'text', 'text': { 'content': text }}
-                    ],
+                    'rich_text': valid_texts(text),
                 },
             }
         for text in texts]
