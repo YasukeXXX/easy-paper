@@ -29,7 +29,11 @@ if __name__ == '__main__':
             filter={ 'and': [
                 { 'property': 'Created', 'date': { 'after': '2024-07-19'}},
                 { 'property': 'Translate Status', 'status': { 'equals': 'Not started'}},
-                { 'property': 'URL', "rich_text": { "contains": "arxiv.org/abs" }},
+                { 'or': [
+                    {'property': 'URL', "rich_text": { "contains": "arxiv.org/abs" }},
+                    {'property': 'URL', "rich_text": { "contains": "aclanthology.org" }},
+                  ]
+                },
                 ]},
             sorts=[{ "property": "Created", "direction": "ascending" }],
             iterate=True,
@@ -38,7 +42,12 @@ if __name__ == '__main__':
     for page_idx, page in enumerate(res):
         if args.limit is not None and page_idx >= args.limit:
             break
-        url = page['properties']['URL']['url'].replace('abs', 'pdf')
+        if 'arxiv' in page['properties']['URL']['url']:
+            url = page['properties']['URL']['url'].replace('abs', 'pdf')
+        elif 'aclanthology.org' in page['properties']['URL']['url']:
+            url = page['properties']['URL']['url'].rstrip('/')
+            if not url.endswith('.pdf'):
+                url = url + '.pdf'
         print(f'Start translation: {url}')
         path = download_from_url(url, save_dir='tmp')
         if args.llm == 'claude':
