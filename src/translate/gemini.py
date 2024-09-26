@@ -19,13 +19,13 @@ class GeminiModule(ABC):
 
     def fill_system_instruction(self, inputs: dict[str, str]) -> str:
         template = Template(self.system_instruction)
-        if self.json_mode():
+        if self.json_mode() and hasattr(self.output_type, 'model_json_schema'):
             inputs['json_schema'] = json.dumps(self.output_type.model_json_schema())
         return template.substitute(inputs)
 
     def fill_message(self, inputs: dict[str, str]) -> str:
         template = Template(self.message)
-        return template.substitute(inputs)
+        return template.substitute(inputs).encode(errors='ignore').decode()
 
     def json_mode(self) -> bool:
         return self.output_type is not str
@@ -35,7 +35,7 @@ class GeminiModule(ABC):
         generation_config = {
           "temperature": 0,
           "top_p": 0.95,
-          "top_k": 64,
+          "top_k": 40,
           "max_output_tokens": 8192,
           "response_mime_type": mime_type,
         }
@@ -50,6 +50,9 @@ class GeminiModule(ABC):
         if not self.json_mode():
             return None
         try:
+            if not hasattr(self.output_type, 'model_validate_json'):
+                json.loads(text)
+                return None
             self.output_type.model_validate_json(text)
             return None
         except ValidationError as e:
@@ -61,6 +64,7 @@ class GeminiModule(ABC):
         response = chat_session.send_message(self.fill_message(inputs))
 
         err = self.get_type_exception(response.text)
+        chat_session.model._generation_config['temperature'] = 1
         for i in range(self.max_retry):
             if err is None:
                 break
@@ -72,7 +76,7 @@ class GeminiModule(ABC):
 
     def __call__(self, inputs: dict[str, str]):
         response = self.call_gemini(inputs)
-        if self.json_mode():
+        if self.json_mode() and hasattr(self.output_type, 'model_validate_json'):
             return self.output_type.model_validate_json(response.text)
         return response.text
 
@@ -91,7 +95,7 @@ class ExtractOutlineResponse(BaseModel):
     paper: StructuredPaper
 
 class ExtractOutline(GeminiModule):
-    model = "gemini-1.5-flash"
+    model = "gemini-1.5-pro-002"
     output_type = ExtractOutlineResponse
     system_instruction = '''
 入力した論文のセクションを構造化してください
