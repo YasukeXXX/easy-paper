@@ -33,7 +33,7 @@ class GeminiModule(ABC):
     def get_model(self, instruction: str) -> genai.GenerativeModel:
         mime_type = "application/json" if self.json_mode() else "text/plain"
         generation_config = {
-          "temperature": 0,
+          "temperature": 0.5,
           "top_p": 0.95,
           "top_k": 40,
           "max_output_tokens": 8192,
@@ -129,6 +129,12 @@ class TranslateSingleSection(GeminiModule):
     system_instruction = '入力した文章を翻訳してマークダウン形式で出力してください。数式は tex 形式で $$ で囲んでください。'
 
 
+class ReplaceEquation(GeminiModule):
+    model = "gemini-1.5-flash"
+    output_type = str
+    message = "${full_text}"
+    system_instruction = '入力した文章中の数式を tex 形式に変換して $$ で囲んでください。'
+
 class Reference(BaseModel):
     anchor: str | int
     title: str
@@ -167,6 +173,7 @@ class TranslatePaper:
     def __init__(self, interval: int = 3):
         self.extract_outline = ExtractOutline()
         self.translate_single_section = TranslateSingleSection()
+        self.replace_equation = ReplaceEquation()
         self.convert_references = ConvertReferences()
         self.interval = interval
 
@@ -206,6 +213,7 @@ class TranslatePaper:
             else:
                 try:
                     output = self.translate_single_section({'full_text': section_text })
+                    output = self.replace_equation({'full_text': output })
                     output = self.convert_references_source(output)
                 except StopCandidateException as e:
                     print('skip this section because\n', e)
