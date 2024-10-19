@@ -3,7 +3,7 @@ import argparse
 
 from .app import download_from_url
 
-def extract_and_save_images(pdf_file: str, prefix: str = '.') -> list[str]:
+def extract_and_save_images(pdf_file: str, prefix: str = '.') -> str:
     from pypdf import PdfReader
 
     file_id = os.path.basename(pdf_file.rstrip('.pdf'))
@@ -17,15 +17,18 @@ def extract_and_save_images(pdf_file: str, prefix: str = '.') -> list[str]:
             path = os.path.join(save_dir, name)
             image.image.save(path)
             paths.append(path)
-    return paths
+    return save_dir
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A simple argparse example')
-    parser.add_argument('arxiv_id', type=str)
+    parser.add_argument('--arxiv_id', type=str)
+    parser.add_argument('--url', type=str)
     args = parser.parse_args()
 
-    url = f'https://arxiv.org/pdf/{args.arxiv_id}'
+    url = args.url
+    if args.arxiv_id is not None:
+        url = f'https://arxiv.org/pdf/{args.arxiv_id}'
     path = download_from_url(url, save_dir='tmp')
-    extract_and_save_images(path, 'tmp')
-    print(f"Save images: tmp/{args.arxiv_id}/")
+    save_dir = extract_and_save_images(path, 'tmp')
+    print(f"Save images: {save_dir}/")
 
