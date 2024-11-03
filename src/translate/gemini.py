@@ -116,21 +116,21 @@ ${json_schema}
 
 
 class ExtractSingleSection(GeminiModule):
-    model = "gemini-1.5-flash"
+    model = "gemini-1.5-flash-002"
     output_type = str
     message = "${full_text}"
     system_instruction = 'Extract the entire `${title}` section of the entered paper'
 
 
 class TranslateSingleSection(GeminiModule):
-    model = "gemini-1.5-flash"
+    model = "gemini-1.5-flash-002"
     output_type = str
     message = "${full_text}"
     system_instruction = '入力した文章を翻訳してマークダウン形式で出力してください。数式は tex 形式で $$ で囲んでください。'
 
 
 class ReplaceEquation(GeminiModule):
-    model = "gemini-1.5-flash"
+    model = "gemini-1.5-flash-002"
     output_type = str
     message = "${full_text}"
     system_instruction = '入力した文章中の数式を tex 形式に変換して $$ で囲んでください。'
@@ -152,7 +152,7 @@ class ConvertReferencesResponse(BaseModel):
     references: list[Reference]
 
 class ConvertReferences(GeminiModule):
-    model = "gemini-1.5-flash"
+    model = "gemini-1.5-flash-002"
     output_type = ConvertReferencesResponse
     message = "${full_text}"
     system_instruction = '''
